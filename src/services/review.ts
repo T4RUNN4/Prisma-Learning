@@ -4,7 +4,7 @@ import validateToken from "../middleware/JWTAuth";
 
 const router = Router();
 
-router.post("/add-review", async (req: Request, res: Response) => {
+router.post("/review", async (req: Request, res: Response) => {
   const validationResult = validateToken(req.headers.authorization!);
 
   if (typeof validationResult === "string") {
@@ -56,7 +56,7 @@ router.get("/reviews", async (req: Request, res: Response) => {
   });
 });
 
-router.patch("/update-review", async (req: Request, res: Response) => {
+router.patch("/review", async (req: Request, res: Response) => {
   const validationResult = validateToken(req.headers.authorization!);
 
   if (typeof validationResult === "string") {
@@ -97,7 +97,7 @@ router.patch("/update-review", async (req: Request, res: Response) => {
   });
 });
 
-router.delete("/delete-review", async (req: Request, res: Response) => {
+router.delete("/review", async (req: Request, res: Response) => {
   const validationResult = validateToken(req.headers.authorization!);
 
   if (typeof validationResult === "string") {

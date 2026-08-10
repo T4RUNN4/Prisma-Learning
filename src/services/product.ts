@@ -4,7 +4,7 @@ import adminvalidation from "../middleware/AdminValidation";
 
 const router = Router();
 
-router.post("/add-products", async (req: Request, res: Response) => {
+router.post("/product", async (req: Request, res: Response) => {
   const validationResult = await adminvalidation(req.headers.authorization!);
 
   if (typeof validationResult === "string") {
@@ -57,7 +57,7 @@ router.get("/products", async (req: Request, res: Response) => {
   });
 });
 
-router.patch("/update-products", async (req: Request, res: Response) => {
+router.patch("/product", async (req: Request, res: Response) => {
   const validationResult = await adminvalidation(req.headers.authorization!);
 
   if (typeof validationResult === "string") {
@@ -106,7 +106,7 @@ router.patch("/update-products", async (req: Request, res: Response) => {
   });
 });
 
-router.delete("/delete-products", async (req: Request, res: Response) => {
+router.delete("/product", async (req: Request, res: Response) => {
   const validationResult = await adminvalidation(req.headers.authorization!);
 
   if (typeof validationResult === "string") {
