@@ -112,6 +112,12 @@ router.patch("/update", async (req: Request, res: Response) => {
   }
 
   const { name, email } = req.body;
+  if(!name && !email) {
+    return res.status(404).json({
+      status: "error",
+      message: '"Either name or email is required',
+    });
+  }
 
   const updatedUser = await prisma.user.update({
     where: { id: validationResult.id },
