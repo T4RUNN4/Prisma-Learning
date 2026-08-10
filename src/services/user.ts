@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import prisma from "../lib/prisma";
 import jwt from "jsonwebtoken";
+import validateToken from "../middleware.ts/JWTAuth";
 
 const router = Router();
 
@@ -101,73 +102,52 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 router.patch("/update", async (req: Request, res: Response) => {
-  const authHeader = req.headers.authorization;
+  const validationResult = validateToken(req.headers.authorization!);
 
-  if (!authHeader) {
+  if(typeof validationResult === "string") {
     return res.status(401).json({
       status: "error",
-      message: "Authorization header missing",
+      message: validationResult,
     });
   }
 
-  const token = authHeader.split(" ")[1];
+  const { name, email } = req.body;
 
-  try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-    const { name, email } = req.body;
+  const updatedUser = await prisma.user.update({
+    where: { id: validationResult.id },
+    data: { name, email },
+  });
 
-    const updatedUser = await prisma.user.update({
-      where: { id: decoded.id },
-      data: { name, email },
-    });
-
-    res.json({
-      status: "success",
-      message: "User updated successfully",
-      data: {
-        id: updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-      },
-    });
-  } catch (error) {
-    res.status(401).json({
-      status: "error",
-      message: "Invalid token",
-    });
-  }
+  res.json({
+    status: "success",
+    message: "User updated successfully",
+    data: {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+    },
+  });
 });
 
 router.delete("/delete", async (req: Request, res: Response) => {
-  const authHeader = req.headers.authorization;
+  const validationResult = validateToken(req.headers.authorization!);
 
-  if (!authHeader) {
+  if (typeof validationResult === "string") {
     return res.status(401).json({
       status: "error",
-      message: "Authorization header missing",
+      message: validationResult,
     });
   }
 
-  const token = authHeader.split(" ")[1];
+  await prisma.user.update({
+    where: { id: validationResult.id },
+    data: { isDeleted: true },
+  });
 
-  try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-
-    await prisma.user.update({
-      where: { id: decoded.id },
-      data: { isDeleted: true },
-    });
-
-    res.json({
-      status: "success",
-      message: "User deleted successfully",
-    });
-  } catch (error) {
-    res.status(401).json({
-      status: "error",
-      message: "Invalid token",
-    });
-  }
+  res.json({
+    status: "success",
+    message: "User deleted successfully",
+  });
 });
 
-export default router;
+export default router
