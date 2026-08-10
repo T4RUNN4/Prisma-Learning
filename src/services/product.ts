@@ -45,15 +45,6 @@ router.post("/add-products", async (req: Request, res: Response) => {
 });
 
 router.get("/products", async (req: Request, res: Response) => {
-  const validationResult = validateToken(req.headers.authorization!);
-
-  if (typeof validationResult === "string") {
-    return res.status(401).json({
-      status: "error",
-      message: validationResult,
-    });
-  }
-
   const products = await prisma.product.findMany({
     where: {
       isDeleted: false,
