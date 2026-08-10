@@ -30,3 +30,17 @@ enum UserRole {
   ADMIN
   USER
 }
+
+model Product {
+  id String @id @default(uuid())
+  title String
+  description String?
+  stock Int
+  price Float
+  isDeleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("products")
+}
