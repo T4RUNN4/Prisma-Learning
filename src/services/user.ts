@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import prisma from "../lib/prisma";
 import jwt from "jsonwebtoken";
-import validateToken from "../middleware.ts/JWTAuth";
+import validateToken from "../middleware/JWTAuth";
 
 const router = Router();
 
@@ -104,7 +104,7 @@ router.post("/login", async (req: Request, res: Response) => {
 router.patch("/update", async (req: Request, res: Response) => {
   const validationResult = validateToken(req.headers.authorization!);
 
-  if(typeof validationResult === "string") {
+  if (typeof validationResult === "string") {
     return res.status(401).json({
       status: "error",
       message: validationResult,
@@ -112,7 +112,7 @@ router.patch("/update", async (req: Request, res: Response) => {
   }
 
   const { name, email } = req.body;
-  if(!name && !email) {
+  if (!name && !email) {
     return res.status(404).json({
       status: "error",
       message: '"Either name or email is required',
@@ -156,4 +156,4 @@ router.delete("/delete", async (req: Request, res: Response) => {
   });
 });
 
-export default router
+export default router;
