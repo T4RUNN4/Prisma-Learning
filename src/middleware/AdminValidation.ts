@@ -8,15 +8,17 @@ const adminvalidation = async (authHeader: string) => {
     return jwtValidation;
   }
 
-  const user = await prisma.user.findFirst({
-    where: { id: jwtValidation.id },
+  const user = await prisma.user.findUnique({
+    where: {
+      id: jwtValidation.id,
+    },
   });
 
-  if (!user) {
+  if (!user || user.isDeleted) {
     return "User not found";
   }
 
-  if (user.role === "USER") {
+  if (user.role !== "ADMIN") {
     return "Unauthorized Operations";
   }
 };
