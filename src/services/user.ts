@@ -9,15 +9,44 @@ const router = Router();
 router.post("/register", async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
 
-  if (!name || !email || !password) {
+  if(!name || typeof name !== "string") {
     return res.status(400).json({
       status: "error",
-      message: "Name, email and password are required",
+      message: "Invalid name",
+    });
+  }
+
+  const trimmedName = name.trim();
+  if (!trimmedName) {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid name",
+    });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (
+    !normalizedEmail ||
+    typeof normalizedEmail !== "string" ||
+    !emailRegex.test(normalizedEmail)
+  ) {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid email",
+    });
+  }
+
+  if (!password || typeof password !== "string" || password.length < 6) {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid password. Password must be atleast 6 characters long",
     });
   }
 
   const existingUser = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
 
   if (existingUser) {
@@ -31,8 +60,8 @@ router.post("/register", async (req: Request, res: Response) => {
 
   const user = await prisma.user.create({
     data: {
-      name,
-      email,
+      name: trimmedName,
+      email: normalizedEmail,
       password: hashedPassword,
     },
   });
