@@ -1,7 +1,11 @@
-interface StringValidationResult {
-  status: "success" | "error";
-  data?: string;
-}
+type StringValidationResult =
+  | {
+      status: "success";
+      data: string;
+    }
+  | {
+      status: "error";
+    };
 
 const StringValidation = (text: unknown): StringValidationResult => {
   if (typeof text !== "string" || !text.trim()) {
