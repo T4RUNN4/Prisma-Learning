@@ -3,21 +3,16 @@ import bcrypt from "bcrypt";
 import prisma from "../lib/prisma";
 import jwt from "jsonwebtoken";
 import validateToken from "../middleware/JWTAuth";
+import StringValidation from "../utils/StringValidation";
 
 const router = Router();
 
 router.post("/register", async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
 
-  if(!name || typeof name !== "string") {
-    return res.status(400).json({
-      status: "error",
-      message: "Invalid name",
-    });
-  }
+  const validatedName = StringValidation(name);
 
-  const trimmedName = name.trim();
-  if (!trimmedName) {
+  if(validatedName.status === "error") {
     return res.status(400).json({
       status: "error",
       message: "Invalid name",
@@ -60,7 +55,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
   const user = await prisma.user.create({
     data: {
-      name: trimmedName,
+      name: validatedName.data!,
       email: normalizedEmail,
       password: hashedPassword,
     },
