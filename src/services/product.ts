@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import prisma from "../lib/prisma";
 import adminvalidation from "../middleware/AdminValidation";
+import StringValidation from "../utils/StringValidation";
 
 const router = Router();
 
@@ -15,19 +16,52 @@ router.post("/product", async (req: Request, res: Response) => {
   }
 
   const { title, description, stock, price } = req.body;
-  if (!title || !stock || !price) {
+
+  const validatedTitle = StringValidation(title);
+  if (validatedTitle.status === "error") {
     return res.status(400).json({
       status: "error",
-      message: "Title, Stock and Price are required",
+      message: "Invalid name",
+    });
+  }
+
+  let validatedDescription = "";
+
+  if (description !== undefined) {
+    const result = StringValidation(description);
+
+    if (result.status === "error") {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid description",
+      });
+    }
+
+    validatedDescription = result.data;
+  }
+
+  const validateStock = Numbervalidation(stock);
+  if (validateStock.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Stock amount. Stock must be a number and bigger than or equal to 0",
+    });
+  }
+  
+  const validatePrice = Numbervalidation(price);
+  if (validatePrice.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Price amount. Price must be a number and bigger than or equal to 0",
     });
   }
 
   const product = await prisma.product.create({
     data: {
-      title,
-      description,
-      stock,
-      price,
+      title: validatedTitle.data,
+      description: validatedDescription,
+      stock: validateStock.number,
+      price: validatePrice.number,
     },
   });
 
@@ -57,6 +91,35 @@ router.get("/products", async (req: Request, res: Response) => {
   });
 });
 
+router.get("/product/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const validatedID = StringValidation(id);
+
+  if (validatedID.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Product ID",
+    });
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id: validatedID.data },
+  });
+
+  if (!product || product.isDeleted) {
+    return res.status(404).json({
+      status: "error",
+      message: "product not found",
+    });
+  }
+
+  res.json({
+    status: "success",
+    message: "Product fetch successfully",
+    data: product,
+  });
+})
+
 router.patch("/product", async (req: Request, res: Response) => {
   const validationResult = await adminvalidation(req.headers.authorization!);
 
@@ -68,11 +131,12 @@ router.patch("/product", async (req: Request, res: Response) => {
   }
 
   const { id, title, description, stock, price } = req.body;
-
-  if (!id) {
+  
+  const validateID = StringValidation(id);
+  if (validateID.status === "error") {
     return res.status(400).json({
       status: "error",
-      message: "Product Id is required",
+      message: "Invalid ID",
     });
   }
 
@@ -88,8 +152,19 @@ router.patch("/product", async (req: Request, res: Response) => {
     });
   }
 
+  const product = await prisma.product.findUnique({
+    where: { id: validateID.data },
+  });
+
+  if (!product || product.isDeleted) {
+    return res.status(404).json({
+      status: "error",
+      message: "Product not found",
+    });
+  }
+
   const updatedProduct = await prisma.product.update({
-    where: { id: id },
+    where: { id: validateID.data },
     data: { title, description, stock, price },
   });
 
@@ -117,15 +192,17 @@ router.delete("/product", async (req: Request, res: Response) => {
   }
 
   const { id } = req.body;
-  if (!id) {
+  const validateID = StringValidation(id);
+
+  if (validateID.status === "error") {
     return res.status(400).json({
       status: "error",
-      message: "Atlest one property is required",
+      message: "Invalid ID",
     });
   }
 
   await prisma.product.update({
-    where: { id },
+    where: { id: validateID.data },
     data: {
       isDeleted: true,
     },
