@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import prisma from "../lib/prisma";
 import validateToken from "../middleware/JWTAuth";
+import StringValidation from "../utils/StringValidation";
 
 const router = Router();
 
@@ -15,18 +16,41 @@ router.post("/review", async (req: Request, res: Response) => {
   } 
 
   const { productId, review } = req.body;
-  if(!productId || !review) {
+
+  const validatedID = StringValidation(productId);
+  if (validatedID.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Product Id",
+    });
+  }
+
+  const validatedReview = StringValidation(review);
+  if (validatedReview.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Review",
+    });
+  }
+
+  const product = await prisma.product.findUnique({
+    where: {
+      id: validatedID.data,
+    },
+  });
+
+  if (!product || product.isDeleted) {
     return res.status(404).json({
       status: "error",
-      message: "Product Id, Customer Id and Review is required",
+      message: "Product not found",
     });
   }
 
   const ret = await prisma.review.create({
     data: {
-        review,
+        review: validatedReview.data,
         customerId: validationResult.id,
-        productId
+        productId: validatedID.data
     }
   });
 
@@ -56,6 +80,37 @@ router.get("/reviews", async (req: Request, res: Response) => {
   });
 });
 
+router.get("/review/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const validatedID = StringValidation(id);
+  if (validatedID.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Review Id",
+    });
+  }
+
+  const review = await prisma.review.findUnique({
+    where: {
+      id: validatedID.data
+    }
+  })
+
+  if(!review || review.isDeleted) {
+    return res.status(400).json({
+      status: "error",
+      message: "Review Not found",
+    });
+  }
+
+  res.json({
+    status: "success",
+    message: "Review fetch successfull",
+    data: review,
+  });
+})
+
 router.patch("/review", async (req: Request, res: Response) => {
   const validationResult = validateToken(req.headers.authorization!);
 
@@ -66,16 +121,38 @@ router.patch("/review", async (req: Request, res: Response) => {
     });
   }
 
-  const { id, customerId, review } = req.body;
+  const { id, review } = req.body;
 
-  if (!id || !customerId|| !review) {
+  const validatedID = StringValidation(id);
+  if (validatedID.status === "error") {
     return res.status(400).json({
       status: "error",
-      message: "Review Id and Review is required",
+      message: "Invalid Product Id",
     });
   }
 
-  if (validationResult.id !== customerId) {
+  const validatedReview = StringValidation(review);
+  if (validatedReview.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Review",
+    });
+  }
+
+  const currreview = await prisma.review.findUnique({
+    where: {
+      id: validatedID.data,
+    },
+  });
+
+  if (!currreview || currreview.isDeleted) {
+    return res.status(400).json({
+      status: "error",
+      message: "Review Not found",
+    });
+  }
+
+  if (validationResult.id !== currreview.customerId) {
     return res.status(401).json({
       status: "error",
       message: "Unauthorized Action",
@@ -83,8 +160,8 @@ router.patch("/review", async (req: Request, res: Response) => {
   }
 
   const updatedReveiew = await prisma.review.update({
-    where: { id: id },
-    data: { review },
+    where: { id: validatedID.data },
+    data: { review: validatedReview.data },
   });
 
   res.json({
@@ -107,16 +184,30 @@ router.delete("/review", async (req: Request, res: Response) => {
     });
   }
 
-  const { id, customerId } = req.body;
+  const { id } = req.body;
 
-  if (!id || !customerId) {
+  const validatedID = StringValidation(id);
+  if (validatedID.status === "error") {
     return res.status(400).json({
       status: "error",
-      message: "Review Id and Customer Id is required",
+      message: "Invalid Product Id",
     });
   }
 
-  if (validationResult.id !== customerId) {
+  const review = await prisma.review.findUnique({
+    where: {
+      id: validatedID.data
+    }
+  })
+
+  if(!review || review.isDeleted) {
+    return res.status(400).json({
+      status: "error",
+      message: "Review Not found",
+    });
+  }
+
+  if (validationResult.id !== review.customerId) {
     return res.status(401).json({
       status: "error",
       message: "Unauthorized Action",
@@ -124,7 +215,7 @@ router.delete("/review", async (req: Request, res: Response) => {
   }
 
   await prisma.review.update({
-    where: { id },
+    where: { id: validatedID.data },
     data: {
       isDeleted: true,
     },
