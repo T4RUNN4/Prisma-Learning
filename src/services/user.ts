@@ -4,6 +4,8 @@ import prisma from "../lib/prisma";
 import jwt from "jsonwebtoken";
 import validateToken from "../middleware/JWTAuth";
 import StringValidation from "../utils/StringValidation";
+import EmailValidation from "../utils/EmailValidation";
+import PasswordValidation from "../utils/PasswordValidation";
 
 const router = Router();
 
@@ -19,44 +21,41 @@ router.post("/register", async (req: Request, res: Response) => {
     });
   }
 
-  const normalizedEmail = email.trim().toLowerCase();
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validatedEmail = EmailValidation(email);
 
-  if (
-    !normalizedEmail ||
-    typeof normalizedEmail !== "string" ||
-    !emailRegex.test(normalizedEmail)
-  ) {
+  if (validatedEmail.status === "error") {
     return res.status(400).json({
       status: "error",
-      message: "Invalid email",
-    });
-  }
-
-  if (!password || typeof password !== "string" || password.length < 6) {
-    return res.status(400).json({
-      status: "error",
-      message: "Invalid password. Password must be atleast 6 characters long",
+      message: "Invalid Email",
     });
   }
 
   const existingUser = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
+    where: { email: validatedEmail.email },
   });
 
   if (existingUser) {
     return res.status(409).json({
       status: "error",
-      message: "Email already registered",
+      message: "Email already exists",
     });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const validatedPassword = PasswordValidation(password);
+
+  if (validatedPassword.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Password",
+    });
+  }
+
+  const hashedPassword = await bcrypt.hash(validatedPassword.data!, 10);
 
   const user = await prisma.user.create({
     data: {
-      name: validatedName.data!,
-      email: normalizedEmail,
+      name: validatedName.data,
+      email: validatedEmail.email!,
       password: hashedPassword,
     },
   });
@@ -71,6 +70,7 @@ router.post("/register", async (req: Request, res: Response) => {
     },
   });
 });
+
 
 router.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
