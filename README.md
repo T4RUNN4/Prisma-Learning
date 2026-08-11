@@ -1,12 +1,14 @@
-# Register User API
+# API Documentation
 
-## Endpoint
+## Register User API
+
+### Endpoint
 
 **POST** `/api/register`
 
 ---
 
-## Request Body
+### Request Body
 
 ```json
 {
