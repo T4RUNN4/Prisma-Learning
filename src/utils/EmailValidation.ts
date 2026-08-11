@@ -1,9 +1,13 @@
 import StringValidation from "./StringValidation";
 
-interface EmailValidationResult {
-  status: "success" | "error";
-  email?: string;
-}
+type EmailValidationResult =
+  | {
+      status: "success";
+      email: string;
+    }
+  | {
+      status: "error";
+    };
 
 const EmailValidation = (email: unknown): EmailValidationResult => {
   const stringValidatedEmail = StringValidation(email);

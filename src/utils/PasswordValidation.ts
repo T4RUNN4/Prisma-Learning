@@ -1,9 +1,13 @@
 import StringValidation from "./StringValidation";
 
-interface PasswordValidationResult {
-  status: "success" | "error";
-  data?: string;
-}
+type PasswordValidationResult =
+  | {
+      status: "success";
+      password: string;
+    }
+  | {
+      status: "error";
+    };
 
 const PasswordValidation = (text: unknown): PasswordValidationResult => {
   const stringValidatedPassword = StringValidation(text);
@@ -16,7 +20,7 @@ const PasswordValidation = (text: unknown): PasswordValidationResult => {
 
   return {
     status: "success",
-    data: stringValidatedPassword.data,
+    password: stringValidatedPassword.data,
   };
 };
 

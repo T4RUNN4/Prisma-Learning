@@ -31,6 +31,15 @@ router.post("/register", async (req: Request, res: Response) => {
     });
   }
 
+  const validatedPassword = PasswordValidation(password);
+
+  if (validatedPassword.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Password",
+    });
+  }
+
   const existingUser = await prisma.user.findUnique({
     where: { email: validatedEmail.email },
   });
@@ -42,21 +51,12 @@ router.post("/register", async (req: Request, res: Response) => {
     });
   }
 
-  const validatedPassword = PasswordValidation(password);
-
-  if (validatedPassword.status === "error") {
-    return res.status(400).json({
-      status: "error",
-      message: "Invalid Password",
-    });
-  }
-
-  const hashedPassword = await bcrypt.hash(validatedPassword.data!, 10);
+  const hashedPassword = await bcrypt.hash(validatedPassword.password, 10);
 
   const user = await prisma.user.create({
     data: {
       name: validatedName.data,
-      email: validatedEmail.email!,
+      email: validatedEmail.email,
       password: hashedPassword,
     },
   });
@@ -128,7 +128,7 @@ router.post("/login", async (req: Request, res: Response) => {
   }
 
   const isPasswordValid = await bcrypt.compare(
-    validatedPassword.data!,
+    validatedPassword.password,
     user.password,
   );
 
@@ -174,27 +174,31 @@ router.patch("/update", async (req: Request, res: Response) => {
   }
 
   const { name, email } = req.body;
-  const validatedName = StringValidation(name);
-
-  if (validatedName.status === "error") {
-    return res.status(400).json({
+  if(!name && !email) {
+    return res.status(404).json({
       status: "error",
-      message: "Invalid name",
+      message: "Either name or email is required",
     });
   }
 
-  const validatedEmail = EmailValidation(email);
-
-  if (validatedEmail.status === "error") {
-    return res.status(400).json({
-      status: "error",
-      message: "Invalid Email",
+  if(email) {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
     });
+
+    if (existingUser && existingUser.id !== validationResult.id) {
+      return res.status(409).json({
+        status: "error",
+        message: "Email already exists",
+      });
+    }
   }
 
   const updatedUser = await prisma.user.update({
     where: { id: validationResult.id },
-    data: { name: validatedName.data, email: validatedEmail.email },
+    data: { name, email },
   });
 
   res.json({
