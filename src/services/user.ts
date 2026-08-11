@@ -6,6 +6,7 @@ import validateToken from "../middleware/JWTAuth";
 import StringValidation from "../utils/StringValidation";
 import EmailValidation from "../utils/EmailValidation";
 import PasswordValidation from "../utils/PasswordValidation";
+import adminvalidation from "../middleware/AdminValidation";
 
 const router = Router();
 
@@ -14,7 +15,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
   const validatedName = StringValidation(name);
 
-  if(validatedName.status === "error") {
+  if (validatedName.status === "error") {
     return res.status(400).json({
       status: "error",
       message: "Invalid name",
@@ -71,19 +72,52 @@ router.post("/register", async (req: Request, res: Response) => {
   });
 });
 
+router.get("/users", async(req: Request, res: Response) => {
+  const validationResult = await adminvalidation(req.headers.authorization!);
+
+  if (typeof validationResult === "string") {
+    return res.status(401).json({
+      status: "error",
+      message: validationResult,
+    });
+  }
+
+  const users = await prisma.user.findMany({
+    where: {
+      isDeleted: false
+    }
+  });
+
+  res.json({
+    status: "success",
+    message: "User fetch successful",
+    data: users,
+  });
+})
 
 router.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  const validatedEmail = EmailValidation(email);
+
+  if (validatedEmail.status === "error") {
     return res.status(400).json({
       status: "error",
-      message: "Email and password are required",
+      message: "Invalid Email",
+    });
+  }
+
+  const validatedPassword = PasswordValidation(password);
+
+  if (validatedPassword.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Password",
     });
   }
 
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: validatedEmail.email },
   });
 
   if (!user || user.isDeleted) {
@@ -93,7 +127,10 @@ router.post("/login", async (req: Request, res: Response) => {
     });
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  const isPasswordValid = await bcrypt.compare(
+    validatedPassword.data!,
+    user.password,
+  );
 
   if (!isPasswordValid) {
     return res.status(401).json({
@@ -106,7 +143,7 @@ router.post("/login", async (req: Request, res: Response) => {
     {
       id: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
     },
     process.env.JWT_SECRET!,
     {
@@ -137,16 +174,27 @@ router.patch("/update", async (req: Request, res: Response) => {
   }
 
   const { name, email } = req.body;
-  if (!name && !email) {
-    return res.status(404).json({
+  const validatedName = StringValidation(name);
+
+  if (validatedName.status === "error") {
+    return res.status(400).json({
       status: "error",
-      message: '"Either name or email is required',
+      message: "Invalid name",
+    });
+  }
+
+  const validatedEmail = EmailValidation(email);
+
+  if (validatedEmail.status === "error") {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid Email",
     });
   }
 
   const updatedUser = await prisma.user.update({
     where: { id: validationResult.id },
-    data: { name, email },
+    data: { name: validatedName.data, email: validatedEmail.email },
   });
 
   res.json({
