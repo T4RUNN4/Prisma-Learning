@@ -1,100 +1,392 @@
 # API Documentation
 
-## Register User API
-
-### Endpoint
-
-**POST** `/api/register`
+### API Path
+**URL**: `https://prisma-learning.onrender.com/api`
 
 ---
 
-### Request Body
+### Admin Credentials
+**Admin Email**: `admin@example.com` </br>
+**Admin Password**: `123456`
+
+---
+
+### Indicators
+
+
+
+```*``` - Indicates **Admin-only Endpoint** </br>
+```**``` - Indicates **Validated user only**
+
+---
+
+### Header
 
 ```json
 {
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "secret123"
+  "Authentication": "Bearer JWT_TOEKN_HERE"
 }
-```
+``` 
+
+- Required for Admin/User only endpoints
+
+</br>
+
+## Register User API
+
+**Endpoint**: `/register` </br>
+**Method**: `POST`
+
 ---
 
 ### Parameters
 
-| Field      | Type   | Required |
-| ---------- | ------ | -------- |
-| `name`     | String | Yes      |
-| `email`    | String | Yes      |
-| `password` | String | Yes      |
+```json
+{
+  "name": "John Doe",              // requried
+  "email": "johndoe@example.com",  // required
+  "password": "123456"             // required
+}
+```
 
 ---
 
-## Successful Response
+</br>
 
-### Status Code
+## Fetch User API
 
-`201 Created`
+**Endpoint**: `/users` `*` </br>
+**Method**: `GET`
 
-### Response
+---
+
+</br>
+
+## Login User API
+
+**Endpoint**: `/login` </br>
+**Method**: `POST`
+
+---
+
+### Parameters
+
+```json
+{
+  "email": "johndoe@exampe.com",  // required
+  "password": "123456"            // required
+}
+```
+
+---
+
+</br>
+
+## Update User API
+
+**Endpoint**: `/update` `**` </br>
+**Method**: `PATCH`
+
+---
+
+### Parameters
+
+```json
+{
+  "name": "Jonathon Doe",
+  "email": "jonathondoe@example.com"
+}
+```
+
+---
+
+</br>
+
+## Delete User API
+
+**Endpoint**: `/delete` `**` </br>
+**Method**: `DELETE`
+
+---
+
+</br>
+
+## Add Product API
+
+**Endpoint**: `/product` `*` </br>
+**Method**: `POST`
+
+---
+
+### Parameters
+
+```json
+{
+  "title": "Lorem Ipsum",                       // required
+  "description": "Lorem Ipsum Dolor Sit Amet",
+  "stock": 6,                                   // required
+  "price": 6.7                                  // required
+}
+```
+
+---
+
+</br>
+
+## Get Products API
+
+**Endpoint**: `/product` </br>
+**Method**: `GET`
+
+---
+
+</br>
+
+## Get Specific Product API
+
+**Endpoint**: `/product/:id` </br>
+**Method**: `GET`
+
+---
+
+### Parameters
+
+```json
+{
+  "id": "a12-34ed-..."  // Product id | required 
+}
+```
+
+---
+
+</br>
+
+## Update Product API
+
+**Endpoint**: `/product` `*` </br>
+**Method**: `PATCH`
+
+---
+
+### Parameters
+
+```json
+{
+  "id": "a12-34ed-...",  // Product id | required
+  "title": "Lorem Ipsum",
+  "description": "Lorem Ipsum Dolor Sit Amet",
+  "stock": 6,
+  "price": 6.7
+}
+```
+
+---
+
+</br>
+
+## Delete Product API
+
+**Endpoint**: `/product` `*` </br>
+**Method**: `DELETE`
+
+---
+
+### Parameters
+
+```json
+{
+  "id": "a12-34ed-..."  // Product id | required 
+}
+```
+
+---
+
+</br>
+
+## Add Order API
+
+**Endpoint**: `/order` `**` </br>
+**Method**: `POST`
+
+---
+
+### Parameters
+
+```json
+{
+  "productId": "a12-34ed-...",  // required
+  "quantity": 4                 // required
+}
+```
+
+---
+
+</br>
+
+## Get All Orders API
+
+**Endpoint**: `/orders` `*` </br>
+**Method**: `GET`
+
+---
+
+</br>
+
+## Get Specific Order API
+
+**Endpoint**: `/order/:id` `**` `*` </br>
+**Method**: `GET`
+
+---
+
+</br>
+
+## Get My Order API
+
+**Endpoint**: `/my-order` `**` </br>
+**Method**: `GET`
+
+---
+
+</br>
+
+## Update Order API
+
+**Endpoint**: `/order` `*` </br>
+**Method**: `PATCH`
+
+---
+
+### Parameters
+
+```json
+{
+  "id": "a12-34ed-...",                     // Order Id | required
+  "status": "Ordered/Processing/Delivered"  // required
+}
+```
+
+---
+
+</br>
+
+## Delete Order API
+
+**Endpoint**: `/order` `*` </br>
+**Method**: `DELETE`
+
+---
+
+### Parameters
+
+```json
+{
+  "id": "a12-34ed-...",  // Order Id | required
+}
+```
+
+---
+
+</br>
+
+## Add Review API
+
+**Endpoint**: `/review` `**` </br>
+**Method**: `POST`
+
+---
+
+### Parameters
+
+```json
+{
+  "productId": "a12-34ed-...",            // required
+  "review": "lorem ipsum dolor sit amet"  // required
+}
+```
+
+---
+
+</br>
+
+## Get Review API
+
+**Endpoint**: `/reviews` </br>
+**Method**: `GET`
+
+---
+
+</br>
+
+## Get Specific Review API
+
+**Endpoint**: `/review/:id` </br>
+**Method**: `GET`
+
+---
+
+</br>
+
+## Update Review API
+
+**Endpoint**: `/review` `**` </br>
+**Method**: `PATCH`
+
+---
+
+### Parameters
+
+```json
+{
+  "id": "a12-34ed-...",          // Review id | required
+  "review": "lorem ipsum dolor"  // required
+}
+```
+
+---
+
+</br>
+
+## Delete Review API
+
+**Endpoint**: `/review` `**` </br>
+**Method**: `DELETE`
+
+---
+
+### Parameters
+
+```json
+{
+  "id": "a12-34ed-...",  // Review id | required
+}
+```
+
+---
+
+</br>
+
+## Response Format
+
+### Successful Response Format
 
 ```json
 {
   "status": "success",
-  "message": "User created successfully",
-  "data": {
-    "id": "a8f5c2e1-1234-4567-8901-abcdef123456",
-    "name": "John Doe",
-    "email": "john@example.com"
-  }
+  "message": "SUCCESS_MESSAGE_HERE",
+  "data": "RETURNED_DATA_WITH_DB_ID"
 }
 ```
 
----
+</br>
 
-## Error Responses
-
-### 400 — Invalid Name
+### Error Responses Format
 
 ```json
 {
   "status": "error",
-  "message": "Invalid name"
+  "message": "ERROR_MESSAGE_HERE"
 }
 ```
-
-Returned when the name is missing or empty.
-
-### 400 — Invalid Email
-
-```json
-{
-  "status": "error",
-  "message": "Invalid email"
-}
-```
-
-Returned when the email format is invalid.
-
-### 400 — Invalid Password
-
-```json
-{
-  "status": "error",
-  "message": "Invalid password. Password must be atleast 6 characters long"
-}
-```
-
-Returned when the password is missing or contains fewer than 6 characters.
-
-### 409 — Email Already Registered
-
-```json
-{
-  "status": "error",
-  "message": "Email already registered"
-}
-```
-
-Returned when an account with the provided email already exists.
 
 ---
