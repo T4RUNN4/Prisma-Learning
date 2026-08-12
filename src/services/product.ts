@@ -25,21 +25,6 @@ router.post("/product", async (req: Request, res: Response) => {
     });
   }
 
-  let validatedDescription = "";
-
-  if (description !== undefined) {
-    const result = StringValidation(description);
-
-    if (result.status === "error") {
-      return res.status(400).json({
-        status: "error",
-        message: "Invalid description",
-      });
-    }
-
-    validatedDescription = result.data;
-  }
-
   const validateStock = Numbervalidation(stock);
   if (validateStock.status === "error") {
     return res.status(400).json({
@@ -59,7 +44,7 @@ router.post("/product", async (req: Request, res: Response) => {
   const product = await prisma.product.create({
     data: {
       title: validatedTitle.data,
-      description: validatedDescription,
+      description: description,
       stock: validateStock.number,
       price: validatePrice.number,
     },
