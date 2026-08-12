@@ -19,3 +19,5 @@ const Numbervalidation = (number: unknown): NumberValidationResult => {
     number: number
   }
 };
+
+export default Numbervalidation;

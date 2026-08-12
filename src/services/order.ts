@@ -3,6 +3,7 @@ import prisma from "../lib/prisma";
 import validateToken from "../middleware/JWTAuth";
 import adminvalidation from "../middleware/AdminValidation";
 import StringValidation from "../utils/StringValidation";
+import Numbervalidation from "../utils/NumberValidation";
 
 const router = Router();
 

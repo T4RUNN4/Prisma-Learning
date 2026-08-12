@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import prisma from "../lib/prisma";
 import adminvalidation from "../middleware/AdminValidation";
 import StringValidation from "../utils/StringValidation";
+import Numbervalidation from "../utils/NumberValidation";
 
 const router = Router();
 
